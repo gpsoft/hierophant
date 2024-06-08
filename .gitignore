@@ -1,0 +1,14 @@
+# clj
+target/
+.cpcache/
+.clj-kondo/
+.lsp/
+.nrepl-port
+.tool-versions
+
+resources/icons/
+
+weather.edn
+yahoo.html
+wn.html
+tenkijp.html
