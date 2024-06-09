@@ -25,4 +25,5 @@ $ clj -T:build uber
 
 ```
 $ java -jar hierophant.jar --help
+$ javaw -jar hierophant.jar dir1 dir2 dir3
 ```
