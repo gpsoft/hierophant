@@ -25,8 +25,9 @@
   (println "Hierophant barrier can detect any change in the file system,")
   (println "then fire arbitrary command right away.")
   (println "Usage: hierophant [OPTIONS] DIR...")
-  (println "Ex:    hierophant /var/log /var/tmp")
-  (println "       hierophant --extension log --base /var log tmp")
+  (println "Ex:    hierophant /var/log /var/tmp/*")
+  (println "         ...trailing '*' indicates recursive")
+  (println "       hierophant --extension log --base /var log tmp/*")
   (println)
   (println "Options:")
   (println options-summary))
@@ -75,6 +76,14 @@
           (.reset watch-key)
           (recur (.take service)))))))
 
+(defn- watch-dirs
+  [args]
+  (mapcat (fn [dir]
+            (if (str/ends-with? dir "*")
+              (u/dirs (str/replace dir #"\*$" ""))
+              [dir]))
+          args))
+
 (defn -main [& args]
   (let [{:keys [options arguments errors summary]} (cli/parse-opts args cli-options)
         {:keys [area-list help]} options
@@ -85,7 +94,7 @@
      (or help err-options?) (show-usage! summary)
      :else (do
             (gui/show-tasktray-icon)
-            (watch arguments
+            (watch (watch-dirs arguments)
                    (fn [kind dir file]
                      (sh "cmd" "/c" "copy" (u/resolve-path dir file) "c:\\tmp")))))))
 
@@ -94,12 +103,15 @@
  (-main "--help")
  (cli/parse-opts ["--extension" "log" "--extension" "js" "/var/log" "/var/tmp"] cli-options)
 
- (watch ["./build"]
+ (watch ["./work"]
         (fn [kind dir file]
           (prn kind)
           (prn dir)
           (prn file)))
 
+ (watch-dirs ["./work" "./src/*"])
+ (watch-dirs ["./*"])
+ (str/replace "./src/*" #"\*$" "")
 
  (binding [*debug* true]
    )

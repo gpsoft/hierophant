@@ -48,6 +48,12 @@
       (File.)
       (.mkdirs)))
 
+(defn dirs
+  [path-str]
+  (mapv str
+       (filter #(.isDirectory %)
+               (file-seq (io/file path-str)))))
+
 (defn read-edn!
   [fpath-str not-found]
   (if (.exists (io/file fpath-str))
@@ -130,15 +136,13 @@
 
 (comment
  
- (split-url "https://yamap.com:8080/hoge-fuga?t=yes&s=no#footer")
- (join-url "https://yamap.com:8080/hoge-fuga" {:t "yes" :s "no"})
- (join-url "https://yamap.com:8080/hoge-fuga" {:t "yes" :s "no"} "footer")
-
  (-> (today)
      (plus-days 2)
      (date2str))
 
  (-> (today)
      (day-of-week))
+
+ (dirs ".")
 
  )
