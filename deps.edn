@@ -11,7 +11,8 @@
                     "--middleware" "[cider.nrepl/cider-middleware]"
                     "--interactive"
                     "--port" "5876"]
-        :jvm-opts ["-Djava.awt.headless=false"]}
+        ; :jvm-opts ["-Djava.awt.headless=false"]
+        }
   :hoge {:extra-deps {nrepl/nrepl {:mvn/version "1.1.0"}}
          :main-opts ["-m" "hierophant.core"]}
 

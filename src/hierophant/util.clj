@@ -1,16 +1,24 @@
 (ns hierophant.util
   (:require
    [clojure.pprint :as pp]
+   [clojure.string :as str]
    [clojure.java.io :as io]
    [clojure.edn :as edn])
   (:import
    [java.awt Desktop]
    [java.io File]
    [java.util Locale]
+   [java.text MessageFormat]
    [java.time LocalDateTime LocalDate]
    [java.time.format DateTimeFormatter]))
 
 (defn tap! [v] (pp/pprint v) v)
+
+(defn os-win?
+  []
+  (-> "os.name"
+     (System/getProperty)
+     (str/starts-with? "Windows")))
 
 (defn to-int
   [s]
@@ -21,6 +29,10 @@
   (->> s
        to-int
        (format "%02d")))
+
+(defn message-format
+  [templ args]
+  (MessageFormat/format templ (into-array Object args)))
 
 (defn rev-sort
   ([coll]
@@ -47,6 +59,10 @@
   (-> path-str
       (File.)
       (.mkdirs)))
+
+(defn dir?
+  [path-str]
+  (.isDirectory (io/file path-str)))
 
 (defn dirs
   [path-str]
@@ -144,5 +160,9 @@
      (day-of-week))
 
  (dirs ".")
+
+ (message-format "{0} {1}" [1, "yes"])
+
+ (os-win?)
 
  )

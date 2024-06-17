@@ -12,12 +12,15 @@
 (def ^:private ^:dynamic *debug* false)
 
 (def ^:private cli-options
-  [["-b" "--base" "Base directory path"
-    :default "."]
-   ["-e" "--extension EXT" "File extension"
-    :multi true
-    :update-fn conj
-    :default []]
+  [
+   ; ["-b" "--base" "Base directory path"
+   ;  :default "."]
+   ; ["-e" "--extension EXT" "File extension"
+   ;  :multi true
+   ;  :update-fn conj
+   ;  :default []]
+   ["-a" "--action ACTION" "Template for action(try an example above)"
+    :default ""]
    ["-h" "--help" "Show usage"]])
 
 (defn- show-usage!
@@ -25,9 +28,8 @@
   (println "Hierophant barrier can detect any change in the file system,")
   (println "then fire arbitrary command right away.")
   (println "Usage: hierophant [OPTIONS] DIR...")
-  (println "Ex:    hierophant /var/log /var/tmp/*")
-  (println "         ...trailing '*' indicates recursive")
-  (println "       hierophant --extension log --base /var log tmp/*")
+  (println "Ex:    hierophant /var/log \"/var/tmp/*\" --action=\"echo {0} {1}/{2}\"")
+  (println "         ...trailing '*' of DIR indicates recursive")
   (println)
   (println "Options:")
   (println options-summary))
@@ -70,8 +72,9 @@
       (Thread/sleep 100)  ;; ...
       (when watch-key
         (let [dir (.toString (.watchable watch-key))]
-          (dorun (for [[_ kind dir file] (collapse-events dir watch-key)]
-                   (handler kind dir file)))
+          (dorun (for [[path kind dir file] (collapse-events dir watch-key)]
+                   (when-not (u/dir? path)
+                     (handler kind dir file))))
           (flush)
           (.reset watch-key)
           (recur (.take service)))))))
@@ -86,17 +89,24 @@
 
 (defn -main [& args]
   (let [{:keys [options arguments errors summary]} (cli/parse-opts args cli-options)
-        {:keys [area-list help]} options
+        {:keys [action help]} options
         err-options? (when errors
                        (println (str/join \newline errors))
                        true)]
     (cond
      (or help err-options?) (show-usage! summary)
      :else (do
-            (gui/show-tasktray-icon)
+            (when (u/os-win?)
+              (gui/show-tasktray-icon))
             (watch (watch-dirs arguments)
                    (fn [kind dir file]
-                     (sh "cmd" "/c" "copy" (u/resolve-path dir file) "c:\\tmp")))))))
+                     ; (sh "cmd" "/c" "copy" (u/resolve-path dir file) "c:\\tmp")
+                     (println "kind:" kind)
+                     (println "dir:" dir)
+                     (println "file:" file)
+                     (println "action:" action)
+                     (println (u/message-format action [kind dir file]))
+                     ))))))
 
 (comment
 
