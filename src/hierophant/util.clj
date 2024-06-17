@@ -20,6 +20,11 @@
      (System/getProperty)
      (str/starts-with? "Windows")))
 
+(defn shell-run!
+  [cmdline]
+  (-> (Runtime/getRuntime)
+      (.exec cmdline)))
+
 (defn to-int
   [s]
   (Integer. (re-find #"\d+" s)))

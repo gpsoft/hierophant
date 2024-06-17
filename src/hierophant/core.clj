@@ -19,7 +19,7 @@
    ;  :multi true
    ;  :update-fn conj
    ;  :default []]
-   ["-a" "--action ACTION" "Template for action(try an example above)"
+   ["-a" "--action ACTION" "Template for action(see below)"
     :default ""]
    ["-h" "--help" "Show usage"]])
 
@@ -28,11 +28,18 @@
   (println "Hierophant barrier can detect any change in the file system,")
   (println "then fire arbitrary command right away.")
   (println "Usage: hierophant [OPTIONS] DIR...")
-  (println "Ex:    hierophant /var/log \"/var/tmp/*\" --action=\"echo {0} {1}/{2}\"")
+  (println "Ex:    hierophant /var/log \"/var/tmp/*\" --action=\"cp {1}/{2} /tmp\"")
   (println "         ...trailing '*' of DIR indicates recursive")
+  (println "       hierophant '\".\\src\\*\"' --action=\"cmd /c copy {1}\\{2} c:\\temp\"")
   (println)
   (println "Options:")
-  (println options-summary))
+  (println options-summary)
+  (println)
+  (println "Action template:")
+  (println "  {0}: Kind of changes. create, modify, or delete")
+  (println "  {1}: The directory path specified by DIR argument")
+  (println "  {2}: The file name")
+  )
 
 (defn- kind-str
   [kind]
@@ -100,12 +107,11 @@
               (gui/show-tasktray-icon))
             (watch (watch-dirs arguments)
                    (fn [kind dir file]
-                     ; (sh "cmd" "/c" "copy" (u/resolve-path dir file) "c:\\tmp")
-                     (println "kind:" kind)
-                     (println "dir:" dir)
-                     (println "file:" file)
-                     (println "action:" action)
-                     (println (u/message-format action [kind dir file]))
+                     ; (println "kind:" kind)
+                     ; (println "dir:" dir)
+                     ; (println "file:" file)
+                     ; (println "action:" action)
+                     (u/shell-run! (u/message-format action [kind dir file]))
                      ))))))
 
 (comment
