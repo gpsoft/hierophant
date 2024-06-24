@@ -19,6 +19,8 @@
    ;  :multi true
    ;  :update-fn conj
    ;  :default []]
+   ["-c" "--caption CAPTION" "Caption for system tray icon"
+    :default "Hierophant"]
    ["-a" "--action ACTION" "Template for action(see below)"
     :default ""]
    ["-h" "--help" "Show usage"]])
@@ -31,6 +33,7 @@
   (println "Ex:    hierophant /var/log \"/var/tmp/*\" --action=\"cp {1}/{2} /tmp\"")
   (println "         ...trailing '*' of DIR indicates recursive")
   (println "       hierophant '\".\\src\\*\"' --action=\"cmd /c copy {1}\\{2} c:\\temp\"")
+  (println "         ...on PowerShell, note the way to quote")
   (println)
   (println "Options:")
   (println options-summary)
@@ -96,7 +99,7 @@
 
 (defn -main [& args]
   (let [{:keys [options arguments errors summary]} (cli/parse-opts args cli-options)
-        {:keys [action help]} options
+        {:keys [action help caption]} options
         err-options? (when errors
                        (println (str/join \newline errors))
                        true)]
@@ -104,7 +107,7 @@
      (or help err-options?) (show-usage! summary)
      :else (do
             (when (u/os-win?)
-              (gui/show-tasktray-icon))
+              (gui/show-tasktray-icon caption))
             (watch (watch-dirs arguments)
                    (fn [kind dir file]
                      ; (println "kind:" kind)
